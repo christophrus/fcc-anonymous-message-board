@@ -50,9 +50,27 @@ app.use(function(req, res, next) {
     .send('Not Found');
 });
 
+// Error Handling middleware
+app.use((err, req, res, next) => {
+  let errCode, errMessage;
+
+  if (err.errors) {
+    // mongoose validation error
+    errCode = 400; // bad request
+    const keys = Object.keys(err.errors);
+    // report the first validation error
+    errMessage = err.errors[keys[0]].message;
+  } else {
+    // generic or custom error
+    errCode = err.status || 500;
+    errMessage = err.message || 'Internal Server Error';
+  }
+  res.status(errCode).json({error: errMessage});
+})
+
 //Start our server and tests!
-app.listen(process.env.PORT || 3000, function () {
-  console.log("Listening on port " + process.env.PORT);
+const listener = app.listen(process.env.PORT || 3000, function () {
+  console.log("Listening on port " + listener.address().port);
   if(process.env.NODE_ENV==='test') {
     console.log('Running Tests...');
     setTimeout(function () {
