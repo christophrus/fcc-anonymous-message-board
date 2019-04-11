@@ -4,12 +4,28 @@ var express     = require('express');
 var bodyParser  = require('body-parser');
 var expect      = require('chai').expect;
 var cors        = require('cors');
+var helmet      = require('helmet');
 
 var apiRoutes         = require('./routes/api.js');
 var fccTestingRoutes  = require('./routes/fcctesting.js');
 var runner            = require('./test-runner');
+var api               = require('./routes/api');
+
+require('./models/db');
 
 var app = express();
+
+app.use(helmet({
+  frameguard: {
+    action: 'SAMEORIGIN'
+  },
+  dnsPrefetchControl: {
+    allow: false
+  },
+  referrerPolicy: {
+    policy: 'same-origin'
+  }
+}));
 
 app.use('/public', express.static(process.cwd() + '/public'));
 
@@ -38,7 +54,7 @@ app.route('/')
 fccTestingRoutes(app);
 
 //Routing for API 
-apiRoutes(app);
+app.use('/api/', api);
 
 //Sample Front-end
 
